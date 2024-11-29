@@ -2,6 +2,7 @@ import hashlib
 import getpass
 import csv
 import random
+from datetime import datetime
 
 class BankSystem:
     def __init__(self):
@@ -17,6 +18,7 @@ class BankSystem:
             print("1. Deposit")
             print("2. Withdraw")
             print("3. Check Balance")
+            print("4. Export Account as CSV File")
             print("5. Transaction History")
             print("6. Exit")
             ch = int(input("Enter your choice: "))
@@ -65,7 +67,8 @@ class BankSystem:
             return
         else:
             self.password_manager[username]['balance'] += dep
-            self.password_manager[username]['transaction_history'].append(f"Deposited: ${dep}")
+            transaction_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.password_manager[username]['transaction_history'].append(f"{transaction_time} - Deposited: ${dep}")
             print(f"An amount of ${dep} has been deposited to your bank account!")
 
     def withdraw(self, username):
@@ -82,7 +85,8 @@ class BankSystem:
             print("Insufficient balance!")
         else:
             self.password_manager[username]['balance'] -= w
-            self.password_manager[username]['transaction_history'].append(f"Withdrew: ${w}")
+            transaction_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.password_manager[username]['transaction_history'].append(f"{transaction_time} - Withdrew: ${w}")
             print(f"An amount of ${w} has been withdrawn from your bank account!")
 
     def register(self):
