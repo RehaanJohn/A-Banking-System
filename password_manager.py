@@ -13,7 +13,14 @@ class BankSystem:
 
     def main_menu(self, username):
         while True:
-            ch = int(input("Options\n1. Deposit\n2. Withdraw\n3. Check Balance\n4. Export account as csv file\n 5. Logout\nEnter choice: "))
+            print("Options")
+            print("1. Deposit")
+            print("2. Withdraw")
+            print("3. Check Balance")
+            print("5. Transaction History")
+            print("6. Exit")
+            ch = int(input("Enter your choice: "))
+            
             if ch == 1:
                 self.deposit(username)
             elif ch == 2:
@@ -27,6 +34,8 @@ class BankSystem:
             elif ch == 4:
                 self.export_account_data(username)
             elif ch == 5:
+                self.view_transaction_history(username)
+            elif ch == 6:
                 print(f"Logging out {username}...\n")
                 break
             else:
@@ -40,6 +49,11 @@ class BankSystem:
             writer.writerow([username, self.password_manager[username]['balance']])
         
         print(f"Account data has been exported to {filename}")
+    
+    def view_transaction_history(self, username):
+        print("Transaction History:")
+        for transaction in self.password_manager[username]['transaction_history']:
+            print(transaction)
 
     def deposit(self, username):
         dep = float(input("Choose amount to be deposited: $"))
@@ -51,17 +65,24 @@ class BankSystem:
             return
         else:
             self.password_manager[username]['balance'] += dep
+            self.password_manager[username]['transaction_history'].append(f"Deposited: ${dep}")
             print(f"An amount of ${dep} has been deposited to your bank account!")
 
     def withdraw(self, username):
-         w = float(input("Choose amount to withdraw: $"))
-         if w <= 0:
+        pin = input("Enter your 4-digit PIN: ")
+        if pin != self.password_manager[username]['pin']:
+            print("Incorrect PIN! Withdrawal denied.")
+            return
+        
+        w = float(input("Choose amount to withdraw: $"))
+        if w <= 0:
             print("Withdrawal amount must be greater than zero!")
             return
-         if w > self.password_manager[username]['balance']:
+        if w > self.password_manager[username]['balance']:
             print("Insufficient balance!")
-         else:
+        else:
             self.password_manager[username]['balance'] -= w
+            self.password_manager[username]['transaction_history'].append(f"Withdrew: ${w}")
             print(f"An amount of ${w} has been withdrawn from your bank account!")
 
     def register(self):
@@ -94,7 +115,8 @@ class BankSystem:
             'password': hashed_password,
             'balance': 0,
             'account_number': account_number,
-            'pin': pin
+            'pin': pin,
+            'transaction_history': []
         }
         print("Account created successfully!")
 
