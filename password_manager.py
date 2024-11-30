@@ -1,3 +1,5 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import hashlib
 import getpass
 import csv
@@ -182,6 +184,30 @@ class BankSystem:
                 break
             else:
                 print("Invalid choice! Please try again.")
+
+    app = Flask(__name__)
+    CORS(app)  # Allow CORS for all domains
+    bank_system = BankSystem()
+
+    @app.route('/register', methods=['POST'])
+    def register():
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+        message = bank_system.register(username, password)
+        return jsonify({"message": message}), 201
+
+    @app.route('/login', methods=['POST'])
+    
+    def login():
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+        success = bank_system.login(username, password)
+        if success:
+            return jsonify({"message": "Login successful!"}), 200
+        else:
+            return jsonify({"message": "Invalid credentials!"}), 401
 
 if __name__ == "__main__":
     bank_system = BankSystem()
