@@ -1,15 +1,22 @@
+from flask import Flask, request, jsonify
+from flask_cors import CORS
 import hashlib
 import getpass
 import csv
-import random
+import random, string
+from datetime import datetime
 
 class BankSystem:
     def __init__(self):
         self.password_manager = {}
+        self.master_account = {
+            'username': 'master',
+            'password': hashlib.sha256('master_password'.encode()).hexdigest()  # Predefined password for master account
+        }
     
     def generate_account_number(self):
-        # Generate a random account number (e.g., a 10-digit number)
-        return random.randint(1000000000, 9999999999)
+        x = ''.join(random.choices(string.ascii_letters + string.digits, k=16)) #16 bit alphanumeric random number
+        return x
 
     def main_menu(self, username):
         while True:
@@ -17,8 +24,9 @@ class BankSystem:
             print("1. Deposit")
             print("2. Withdraw")
             print("3. Check Balance")
+            print("4. Export Account as CSV File")
             print("5. Transaction History")
-            print("6. Exit")
+            print("6. Logout")
             ch = int(input("Enter your choice: "))
             
             if ch == 1:
@@ -40,6 +48,27 @@ class BankSystem:
                 break
             else:
                 print("Invalid choice, please try again.")
+
+    def master_menu(self):
+        while True:
+            print("Master Account Menu")
+            print("1. View All Accounts")
+            print("2. Exit")
+            ch = int(input("Enter your choice: "))
+            
+            if ch == 1:
+                self.view_all_accounts()
+            elif ch == 2:
+                print("Logging out of master account...\n")
+                break
+            else:
+                print("Invalid choice, please try again.")
+    
+    def view_all_accounts(self):
+        print("All Registered Accounts:")
+        for username, details in self.password_manager.items():
+            print(f"Username: {username}, Balance: ${details['balance']}, Account Number: {details['account_number']}")
+
     
     def export_account_data(self, username):
         filename = f"{username}_account_data.csv"
@@ -65,7 +94,8 @@ class BankSystem:
             return
         else:
             self.password_manager[username]['balance'] += dep
-            self.password_manager[username]['transaction_history'].append(f"Deposited: ${dep}")
+            transaction_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.password_manager[username]['transaction_history'].append(f"{transaction_time} - Deposited: ${dep}")
             print(f"An amount of ${dep} has been deposited to your bank account!")
 
     def withdraw(self, username):
@@ -82,7 +112,8 @@ class BankSystem:
             print("Insufficient balance!")
         else:
             self.password_manager[username]['balance'] -= w
-            self.password_manager[username]['transaction_history'].append(f"Withdrew: ${w}")
+            transaction_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.password_manager[username]['transaction_history'].append(f"{transaction_time} - Withdrew: ${w}")
             print(f"An amount of ${w} has been withdrawn from your bank account!")
 
     def register(self):
@@ -122,7 +153,14 @@ class BankSystem:
 
     def login(self):
         username = input("Enter your username: ")
-        if username not in self.password_manager:
+        if username == self.master_account['username']:
+            password = getpass.getpass("Enter password: ")
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            if self.master_account['password'] == hashed_password:
+                print("Master login successful!")
+                self.master_menu()
+                return
+        elif username not in self.password_manager:
             print("Username not found!")
             return
 
@@ -146,6 +184,30 @@ class BankSystem:
                 break
             else:
                 print("Invalid choice! Please try again.")
+
+    app = Flask(__name__)
+    CORS(app)  # Allow CORS for all domains
+    bank_system = BankSystem()
+
+    @app.route('/register', methods=['POST'])
+    def register():
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+        message = bank_system.register(username, password)
+        return jsonify({"message": message}), 201
+
+    @app.route('/login', methods=['POST'])
+    
+    def login():
+        data = request.json
+        username = data.get('username')
+        password = data.get('password')
+        success = bank_system.login(username, password)
+        if success:
+            return jsonify({"message": "Login successful!"}), 200
+        else:
+            return jsonify({"message": "Invalid credentials!"}), 401
 
 if __name__ == "__main__":
     bank_system = BankSystem()
