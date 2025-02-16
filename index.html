@@ -26,7 +26,7 @@
 
             <button type="submit">Login</button>
         </form>
-        <p>Don't have an account? <a href="#register">Register here</a></p>
+        <p>Don't have an account? <a href="register.html">Register here</a></p>
     </section>
 
     <section id="home">
@@ -46,4 +46,52 @@
 
     <script src="script.js"></script>
 </body>
+
+<!-- Add this script to your index.html -->
+<script>
+    document.getElementById('login-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        fetch('/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.href = data.redirect;
+            } else {
+                alert(data.message);
+            }
+        });
+    });
+
+    document.getElementById('register-form').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const username = document.getElementById('reg-username').value;
+        const password = document.getElementById('reg-password').value;
+        const pin = document.getElementById('reg-pin').value;
+
+        fetch('/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}&pin=${encodeURIComponent(pin)}`
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                window.location.href = data.redirect;
+            } else {
+                alert(data.message);
+            }
+        });
+    });
+</script>
 </html>

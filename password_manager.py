@@ -15,6 +15,17 @@ class BankSystem:
     def generate_account_number(self):
         x = ''.join(random.choices(string.ascii_letters + string.digits, k=16)) #16 bit alphanumeric random number
         return x
+    
+    def register_user(self, username, password, pin):
+        hashed_password = hashlib.sha256(password.encode()).hexdigest()
+        account_number = self.generate_account_number()
+        self.password_manager[username] = {
+            'password': hashed_password,
+            'balance': 0,
+            'account_number': account_number,
+            'pin': pin,
+            'transaction_history': []
+    }
 
     def main_menu(self, username):
         while True:

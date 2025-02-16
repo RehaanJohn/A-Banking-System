@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - Banking System</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="#news">News</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="portal">
+        <h2>Create Your Account</h2>
+        <form id="register-form">
+            <label for="reg-username">Username:</label>
+            <input type="text" id="reg-username" name="reg-username" required minlength="7">
+
+            <label for="reg-password">Password:</label>
+            <input type="password" id="reg-password" name="reg-password" required minlength="7">
+
+            <label for="reg-pin">4-Digit PIN:</label>
+            <input type="text" id="reg-pin" name="reg-pin" required pattern="\d{4}" title="PIN must be 4 digits">
+
+            <button type="submit">Register</button>
+        </form>
+        <p>Already have an account? <a href="index.html">Login here</a></p>
+    </section>
+
+    <script src="script.js"></script>
+</body>
+</html>
