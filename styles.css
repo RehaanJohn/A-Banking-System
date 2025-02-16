@@ -123,4 +123,128 @@ section p {
     line-height: 1.6;
 }
 
+/* Add these styles to your existing styles.css file */
 
+/* General section styling */
+section {
+    padding: 100px 20px;
+    text-align: center;
+    background-color: rgba(31, 31, 31, 0.95);
+    margin: 20px auto;
+    max-width: 800px;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+section:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.7);
+}
+
+/* Heading styling */
+section h1 {
+    color: #ffffff;
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    background: linear-gradient(45deg, #bb86fc, #03dac6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fadeIn 1.5s ease-in-out;
+}
+
+/* Paragraph styling */
+section p {
+    color: #cccccc;
+    font-size: 20px;
+    line-height: 1.8;
+    animation: slideIn 1s ease-in-out;
+}
+
+/* Keyframes for animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Specific section styling for the home section */
+#home {
+    background: linear-gradient(135deg, rgba(31, 31, 31, 0.95), rgba(18, 18, 18, 0.95));
+}
+
+/* Specific section styling for the news section */
+#news {
+    background: linear-gradient(135deg, rgba(31, 31, 31, 0.95), rgba(18, 18, 18, 0.95));
+}
+
+/* Responsive Navigation Menu */
+.nav-toggle {
+    display: none; /* Hide by default */
+    background: none;
+    border: none;
+    color: #ffffff;
+    font-size: 24px;
+    cursor: pointer;
+    position: absolute;
+    right: 20px;
+    top: 20px;
+    z-index: 1001;
+}
+
+/* Mobile Navigation */
+@media (max-width: 768px) {
+    nav ul {
+        display: none;
+        flex-direction: column;
+        background-color: rgba(31, 31, 31, 0.95);
+        position: absolute;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        padding: 10px 0;
+    }
+
+    nav ul.active {
+        display: flex;
+    }
+
+    .nav-toggle {
+        display: block;
+    }
+}
+
+/* Back to Top Button */
+.back-to-top {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 15px;
+    background-color: #2600ff;
+    color: #ffffff;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s;
+    z-index: 1000; /* Ensure it's above other elements */
+}
+
+.back-to-top:hover {
+    background-color: #3700b3;
+}
