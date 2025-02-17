@@ -14,45 +14,69 @@ def home():
     return render_template('index.html')
 
 # Login route
-@app.route('/login', methods=['POST'])
+@app.route('/login', methods=['GET', 'POST'])
 def login():
-    username = request.form['username']
-    password = request.form['password']
+    if request.method == 'GET':
+        return render_template('index.html')  # Render login page for GET request
 
+    # For POST request (form submission)
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    if not username or not password:
+        return jsonify({'status': 'error', 'message': 'Username and password are required!'})
+
+    # Master account login check
     if username == bank_system.master_account['username']:
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         if bank_system.master_account['password'] == hashed_password:
             session['username'] = username
             return jsonify({'status': 'success', 'message': 'Master login successful!', 'redirect': url_for('master_menu')})
-    elif username in bank_system.password_manager:
+        else:
+            return jsonify({'status': 'error', 'message': 'Invalid password!'})
+
+    # Regular account login check
+    if username in bank_system.password_manager:
         hashed_password = hashlib.sha256(password.encode()).hexdigest()
         if bank_system.password_manager[username]['password'] == hashed_password:
             session['username'] = username
             return jsonify({'status': 'success', 'message': 'Login successful!', 'redirect': url_for('main_menu')})
         else:
             return jsonify({'status': 'error', 'message': 'Invalid password!'})
-    else:
-        return jsonify({'status': 'error', 'message': 'Username not found!'})
+
+    # If username is not found
+    return jsonify({'status': 'error', 'message': 'Username not found!'}) 
+
 
 # Register route
-@app.route('/register', methods=['POST'])
+@app.route('/register', methods=['GET', 'POST'])
+
 def register():
-    username = request.form['username']
-    password = request.form['password']
-    pin = request.form['pin']
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        pin = request.form.get('pin')
 
-    if len(username) < 7:
-        return jsonify({'status': 'error', 'message': 'Username must be longer than 7 characters!'})
-    if len(password) < 7:
-        return jsonify({'status': 'error', 'message': 'Password must be longer than 7 characters!'})
-    if not (pin.isdigit() and len(pin) == 4):
-        return jsonify({'status': 'error', 'message': 'PIN must be a 4-digit integer!'})
+        # Validation checks
+        if len(username) < 7:
+            return jsonify({'status': 'error', 'message': 'Username must be longer than 7 characters!'})
+        if len(password) < 7:
+            return jsonify({'status': 'error', 'message': 'Password must be longer than 7 characters!'})
+        if not (pin.isdigit() and len(pin) == 4):
+            return jsonify({'status': 'error', 'message': 'PIN must be a 4-digit integer!'})
 
-    if username in bank_system.password_manager:
-        return jsonify({'status': 'error', 'message': 'Username already taken!'})
+        # Check if username already exists
+        if username in bank_system.password_manager:
+            return jsonify({'status': 'error', 'message': 'Username already taken!'})
 
-    bank_system.register_user(username, password, pin)
-    return jsonify({'status': 'success', 'message': 'Account created successfully!', 'redirect': url_for('home')})
+        # Register the user
+        bank_system.register_user(username, password, pin)
+        return jsonify({'status': 'success', 'message': 'Account created successfully!', 'redirect': url_for('home')})
+
+    # If GET request, render the registration page
+    return render_template('register.html')
+
+    
 
 # Main menu route
 @app.route('/main_menu')

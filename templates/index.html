@@ -2,7 +2,8 @@
 <html>
 <head>
     <title>Banking System</title>
-    <link rel="stylesheet" type="text/css" href="styles.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}?v=1.0">
+
 </head>
 <body>
     <header>
@@ -26,7 +27,8 @@
 
             <button type="submit">Login</button>
         </form>
-        <p>Don't have an account? <a href="register.html">Register here</a></p>
+        <p>Don't have an account? <a href="{{ url_for('register') }}">Register here</a></p>
+
     </section>
 
     <section id="home">
@@ -44,7 +46,7 @@
         <p>Get in touch with our support team.</p>
     </section>
 
-    <script src="script.js"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 
 <!-- Add this script to your index.html -->
