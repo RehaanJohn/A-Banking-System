@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from password_manager import BankSystem
+import hashlib
 import os
 
 app = Flask(__name__)
@@ -16,41 +17,41 @@ def home():
 # Login route
 @app.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'GET':
-        return render_template('index.html')  # Render login page for GET request
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
 
-    # For POST request (form submission)
-    username = request.form.get('username')
-    password = request.form.get('password')
+        print(f"Raw form data: {request.form}")  # Debug: Print raw form data
+        print(f"Submitted username: {username}")  # Debug: Print username
+        print(f"Submitted password: {password}")  # Debug: Print password
 
-    if not username or not password:
-        return jsonify({'status': 'error', 'message': 'Username and password are required!'})
+        if not username or not password:
+            return jsonify({'status': 'error', 'message': 'Username and password are required!'})
 
-    # Master account login check
-    if username == bank_system.master_account['username']:
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        if bank_system.master_account['password'] == hashed_password:
-            session['username'] = username
-            return jsonify({'status': 'success', 'message': 'Master login successful!', 'redirect': url_for('master_menu')})
-        else:
+        # Master account login check
+        if username == bank_system.master_account['username']:
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            if bank_system.master_account['password'] == hashed_password:
+                session['username'] = username
+                return jsonify({'status': 'success', 'message': 'Login successful!', 'redirect': url_for('master_menu')})
             return jsonify({'status': 'error', 'message': 'Invalid password!'})
 
-    # Regular account login check
-    if username in bank_system.password_manager:
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        if bank_system.password_manager[username]['password'] == hashed_password:
-            session['username'] = username
-            return jsonify({'status': 'success', 'message': 'Login successful!', 'redirect': url_for('main_menu')})
-        else:
+        # Regular account login check
+        if username in bank_system.password_manager:
+            hashed_password = hashlib.sha256(password.encode()).hexdigest()
+            if bank_system.password_manager[username]['password'] == hashed_password:
+                session['username'] = username
+                return jsonify({'status': 'success', 'message': 'Login successful!', 'redirect': url_for('main_menu')})
             return jsonify({'status': 'error', 'message': 'Invalid password!'})
 
-    # If username is not found
-    return jsonify({'status': 'error', 'message': 'Username not found!'}) 
+        return jsonify({'status': 'error', 'message': 'Username not found!'})  # Username not found
 
+    return render_template('index.html')  # Render the login page for GET requests
+
+ 
 
 # Register route
 @app.route('/register', methods=['GET', 'POST'])
-
 def register():
     if request.method == 'POST':
         username = request.form.get('username')
@@ -71,10 +72,15 @@ def register():
 
         # Register the user
         bank_system.register_user(username, password, pin)
+        # Debug: Print the password_manager dictionary after registration
+        print("Current users in the system:", bank_system.password_manager)
         return jsonify({'status': 'success', 'message': 'Account created successfully!', 'redirect': url_for('home')})
+    print("Raw form data:", request.form)
+        
 
     # If GET request, render the registration page
     return render_template('register.html')
+
 
     
 
@@ -83,8 +89,8 @@ def register():
 def main_menu():
     if 'username' not in session:
         return redirect(url_for('home'))
-    username = session['username']
-    return render_template('main_menu.html', username=username)
+    print(f"User {session['username']} accessed the main menu.")
+    return render_template('main_menu.html', username=session['username'])
 
 # Master menu route
 @app.route('/master_menu')
