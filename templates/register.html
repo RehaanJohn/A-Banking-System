@@ -17,7 +17,7 @@
 
     <section class="portal">
         <h2>Create Your Account</h2>
-        <form id="register-form">
+        <form id="register-form" action="/register" method="POST">
             <label for="reg-username">Username:</label>
             <input type="text" id="reg-username" name="username" required>
         
@@ -31,38 +31,9 @@
         </form>
         
         <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
+
     </section>
 
-    <script>
-        document.getElementById('register-form').onsubmit = async (event) => {
-            event.preventDefault();
-
-            const username = document.getElementById('reg-username').value;
-            const password = document.getElementById('reg-password').value;
-            const pin = document.getElementById('reg-pin').value;
-
-            try {
-                const response = await fetch('/register', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: new URLSearchParams({ username, password, pin })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    alert(data.message); // Show success message
-                    window.location.href = data.redirect; // Redirect to home page
-                } else {
-                    alert(data.message); // Show error message
-                }
-            } catch (error) {
-                console.error('Registration error:', error);
-                alert('An unexpected error occurred. Please try again.');
-            }
-        };
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
