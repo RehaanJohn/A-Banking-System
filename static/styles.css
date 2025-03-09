@@ -143,16 +143,7 @@ section:hover {
 }
 
 /* Heading styling */
-section h1 {
-    color: #ffffff;
-    font-size: 42px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    background: linear-gradient(45deg, #bb86fc, #03dac6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    animation: fadeIn 1.5s ease-in-out;
-}
+
 
 /* Paragraph styling */
 section p {
