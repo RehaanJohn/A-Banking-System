@@ -1,6 +1,8 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from password_manager import BankSystem
 import os
+import hashlib
+
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)  # Secret key for session management
