@@ -40,16 +40,19 @@ document.getElementById('register-form').addEventListener('submit', function (e)
         method: 'POST',
         body: formData
     })
-    .then(response => response.json())
+    .then(response => response.json())  // Ensure response is parsed correctly
     .then(data => {
         console.log("Server Response:", data); // Debugging
+
         if (data.status === 'success') {
             window.location.href = data.redirect;  // Redirect to login page
         } else {
-            alert(data.message);
+            alert(data.message);  // Show error instead of redirecting
         }
-    });
+    })
+    .catch(error => console.error("Fetch error:", error));
 });
+
 
 
 

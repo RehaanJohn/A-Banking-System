@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expense Tracker</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}?v=1.0">
+</head>
+<body>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="/">Home</a></li>
+                <li><a href="/main-menu">Main Menu</a></li>
+                <li><a href="/logout">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="portal">
+        <h1>Basic Expense Tracker</h1>
+        <p>Welcome, {{ username }}! Track your expenses easily.</p>
+        
+        <button onclick="window.location.href='/main-menu'">Back to Main Menu</button>
+    </section>
+</body>
+</html>

@@ -66,9 +66,9 @@ def register():
 
         if existing_user:
             conn.close()
-            return jsonify({"status": "error", "message": "Username already exists"})
+            return jsonify({"status": "error", "message": "Username already exists"}), 400  # Return error properly
 
-        # Insert new user if username is available
+        # Insert new user
         c.execute("INSERT INTO users (username, password, pin) VALUES (?, ?, ?)", (username, password, pin))
         conn.commit()
         conn.close()
@@ -78,11 +78,19 @@ def register():
     return render_template("register.html")
 
 
+
 @app.route("/main-menu")
 def main_menu():
     if "user" in session:
         return render_template("main-menu.html")
     return redirect(url_for("login"))
+
+@app.route("/expense-tracker")
+def expense_tracker():
+    if "user" in session:  # Ensure the user is logged in
+        return render_template("expense-tracker.html", username=session["user"])
+    return redirect(url_for("login"))  # Redirect to login if not logged in
+
 
 
 @app.route("/logout")

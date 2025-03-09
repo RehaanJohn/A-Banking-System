@@ -1,10 +1,28 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Main Menu</title>
+    <title>Main Menu - Banking System</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}?v=1.0">
 </head>
 <body>
-    <h1>Welcome, {{ username }}!</h1>
-    <button onclick="window.location.href='/logout'">Logout</button>
+    <header>
+        <nav>
+            <ul>
+                <li><a href="#home">Home</a></li>
+                <li><a href="#news">News</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <section class="portal">
+        <h2>Welcome, {{ username }}!</h2>
+        <div class="button-group">
+            <button onclick="window.location.href='/expense-tracker'">Expense Tracker</button>
+            <button onclick="window.location.href='/logout'">Logout</button>
+        </div>
+    </section>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
 </html>
