@@ -1,5 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
+<<<<<<< HEAD
 import sqlite3
+=======
+from password_manager import BankSystem
+import os
+import hashlib
+
+>>>>>>> 00145c44e76d3d1bd1ecab3d23f7a6c89484d169
 
 app = Flask(__name__)
 app.secret_key = "your_secret_key"
