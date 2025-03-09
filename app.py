@@ -7,6 +7,8 @@ app.secret_key = "your_secret_key"
 def init_db():
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
+    
+    # Create users table
     c.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -14,9 +16,22 @@ def init_db():
             password TEXT NOT NULL
         )
     """)
+    
+    # Create expenses table with proper schema
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS expenses (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT NOT NULL,
+            amount REAL NOT NULL,
+            category TEXT NOT NULL,
+            date DATE NOT NULL,
+            FOREIGN KEY(username) REFERENCES users(username)
+        )
+    """)
+    
     conn.commit()
     conn.close()
-
+    
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -90,6 +105,94 @@ def expense_tracker():
     if "user" in session:  # Ensure the user is logged in
         return render_template("expense-tracker.html", username=session["user"])
     return redirect(url_for("login"))  # Redirect to login if not logged in
+
+@app.route('/expenses', methods=['GET', 'POST', 'DELETE', 'PUT'])
+def handle_expenses():
+    if 'user' not in session:
+        return jsonify({"status": "error", "message": "Not authenticated"}), 401
+
+    username = session['user']
+    
+    if request.method == 'POST':
+        data = request.get_json()
+        try:
+            conn = sqlite3.connect("users.db")
+            c = conn.cursor()
+            c.execute("""
+                INSERT INTO expenses (username, amount, category, date)
+                VALUES (?, ?, ?, ?)
+            """, (username, data['amount'], data['category'], data['date']))
+            conn.commit()
+            return jsonify({"status": "success", "message": "Expense added"})
+        except Exception as e:
+            return jsonify({"status": "error", "message": str(e)}), 400
+        finally:
+            conn.close()
+
+    elif request.method == 'GET':
+        # Handle filters
+        time_filter = request.args.get('filter', 'month')
+        start_date = request.args.get('start')
+        end_date = request.args.get('end')
+        
+        try:
+            conn = sqlite3.connect("users.db")
+            c = conn.cursor()
+            
+            query = "SELECT id, amount, category, date FROM expenses WHERE username = ?"
+            params = [username]
+            
+            if time_filter == 'week':
+                query += " AND date >= date('now', '-7 days')"
+            elif time_filter == 'month':
+                query += " AND date >= date('now', '-1 month')"
+            elif time_filter == '3months':
+                query += " AND date >= date('now', '-3 months')"
+            elif time_filter == 'custom' and start_date and end_date:
+                query += " AND date BETWEEN ? AND ?"
+                params.extend([start_date, end_date])
+            
+            c.execute(query, params)
+            expenses = c.fetchall()
+            return jsonify([{
+                "id": row[0],
+                "amount": row[1],
+                "category": row[2],
+                "date": row[3]
+            } for row in expenses])
+        finally:
+            conn.close()
+
+    elif request.method == 'DELETE':
+        expense_id = request.args.get('id')
+        if not expense_id:
+            return jsonify({"status": "error", "message": "Missing expense ID"}), 400
+        
+        try:
+            conn = sqlite3.connect("users.db")
+            c = conn.cursor()
+            c.execute("DELETE FROM expenses WHERE id = ? AND username = ?", 
+                     (expense_id, username))
+            conn.commit()
+            return jsonify({"status": "success", "message": "Expense deleted"})
+        finally:
+            conn.close()
+
+    elif request.method == 'PUT':
+        data = request.get_json()
+        try:
+            conn = sqlite3.connect("users.db")
+            c = conn.cursor()
+            c.execute("""
+                UPDATE expenses 
+                SET amount = ?, category = ?, date = ?
+                WHERE id = ? AND username = ?
+            """, (data['amount'], data['category'], data['date'], 
+                 data['id'], username))
+            conn.commit()
+            return jsonify({"status": "success", "message": "Expense updated"})
+        finally:
+            conn.close()
 
 
 
