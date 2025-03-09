@@ -22,7 +22,6 @@ def home():
     return render_template("index.html")
 
 @app.route("/login", methods=["GET", "POST"])
-@app.route("/login", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
         if "username" not in request.form or "password" not in request.form:
@@ -51,22 +50,33 @@ def login():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if request.method == "POST":
-        if "username" not in request.form or "password" not in request.form:
+        if "username" not in request.form or "password" not in request.form or "pin" not in request.form:
             return jsonify({"status": "error", "message": "Missing form data"}), 400
-        
+
         username = request.form["username"]
         password = request.form["password"]
-        
+        pin = request.form["pin"]
+
         conn = sqlite3.connect("users.db")
         c = conn.cursor()
-        try:
-            c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-            conn.commit()
+
+        # Check if username exists
+        c.execute("SELECT * FROM users WHERE username = ?", (username,))
+        existing_user = c.fetchone()
+
+        if existing_user:
             conn.close()
-            return jsonify({"status": "success", "redirect": "/login"})
-        except sqlite3.IntegrityError:
             return jsonify({"status": "error", "message": "Username already exists"})
+
+        # Insert new user if username is available
+        c.execute("INSERT INTO users (username, password, pin) VALUES (?, ?, ?)", (username, password, pin))
+        conn.commit()
+        conn.close()
+
+        return jsonify({"status": "success", "redirect": "/login"})
+
     return render_template("register.html")
+
 
 @app.route("/main-menu")
 def main_menu():

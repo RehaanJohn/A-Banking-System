@@ -33,7 +33,7 @@ document.getElementById('login-form').addEventListener('submit', function (e) {
 
 document.getElementById('register-form').addEventListener('submit', function (e) {
     e.preventDefault();
-    
+
     const formData = new FormData(this);
 
     fetch('/register', {
@@ -42,7 +42,7 @@ document.getElementById('register-form').addEventListener('submit', function (e)
     })
     .then(response => response.json())
     .then(data => {
-        console.log("Server Response:", data); // Debugging output
+        console.log("Server Response:", data); // Debugging
         if (data.status === 'success') {
             window.location.href = data.redirect;  // Redirect to login page
         } else {
@@ -50,6 +50,7 @@ document.getElementById('register-form').addEventListener('submit', function (e)
         }
     });
 });
+
 
 
 
