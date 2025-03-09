@@ -1,140 +1,85 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
-from password_manager import BankSystem
-import os
+import sqlite3
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)  # Secret key for session management
+app.secret_key = "your_secret_key"
 
-# Initialize the banking system
-bank_system = BankSystem()
+def init_db():
+    conn = sqlite3.connect("users.db")
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL
+        )
+    """)
+    conn.commit()
+    conn.close()
 
-# Home route
-@app.route('/')
+@app.route("/")
 def home():
-    return render_template('index.html')
+    return render_template("index.html")
 
-# Login route
-@app.route('/login', methods=['GET', 'POST'])
+@app.route("/login", methods=["GET", "POST"])
+@app.route("/login", methods=["GET", "POST"])
 def login():
-    if request.method == 'GET':
-        return render_template('index.html')  # Render login page for GET request
+    if request.method == "POST":
+        if "username" not in request.form or "password" not in request.form:
+            return jsonify({"status": "error", "message": "Missing form data"}), 400
+        
+        username = request.form["username"]
+        password = request.form["password"]
+        
+        conn = sqlite3.connect("users.db")
+        c = conn.cursor()
+        c.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+        user = c.fetchone()
+        conn.close()
+        
+        if user:
+            session["user"] = username
+            print(f"Login successful for {username}")  # Debugging
+            return jsonify({"status": "success", "redirect": "/main-menu"})
+        
+        print("Invalid login attempt")  # Debugging
+        return jsonify({"status": "error", "message": "Invalid username or password"})
 
-    # For POST request (form submission)
-    username = request.form.get('username')
-    password = request.form.get('password')
-
-    if not username or not password:
-        return jsonify({'status': 'error', 'message': 'Username and password are required!'})
-
-    # Master account login check
-    if username == bank_system.master_account['username']:
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        if bank_system.master_account['password'] == hashed_password:
-            session['username'] = username
-            return jsonify({'status': 'success', 'message': 'Master login successful!', 'redirect': url_for('master_menu')})
-        else:
-            return jsonify({'status': 'error', 'message': 'Invalid password!'})
-
-    # Regular account login check
-    if username in bank_system.password_manager:
-        hashed_password = hashlib.sha256(password.encode()).hexdigest()
-        if bank_system.password_manager[username]['password'] == hashed_password:
-            session['username'] = username
-            return jsonify({'status': 'success', 'message': 'Login successful!', 'redirect': url_for('main_menu')})
-        else:
-            return jsonify({'status': 'error', 'message': 'Invalid password!'})
-
-    # If username is not found
-    return jsonify({'status': 'error', 'message': 'Username not found!'}) 
+    return render_template("index.html")
 
 
-# Register route
-@app.route('/register', methods=['GET', 'POST'])
-
+@app.route("/register", methods=["GET", "POST"])
 def register():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
-        pin = request.form.get('pin')
+    if request.method == "POST":
+        if "username" not in request.form or "password" not in request.form:
+            return jsonify({"status": "error", "message": "Missing form data"}), 400
+        
+        username = request.form["username"]
+        password = request.form["password"]
+        
+        conn = sqlite3.connect("users.db")
+        c = conn.cursor()
+        try:
+            c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+            conn.commit()
+            conn.close()
+            return jsonify({"status": "success", "redirect": "/login"})
+        except sqlite3.IntegrityError:
+            return jsonify({"status": "error", "message": "Username already exists"})
+    return render_template("register.html")
 
-        # Validation checks
-        if len(username) < 7:
-            return jsonify({'status': 'error', 'message': 'Username must be longer than 7 characters!'})
-        if len(password) < 7:
-            return jsonify({'status': 'error', 'message': 'Password must be longer than 7 characters!'})
-        if not (pin.isdigit() and len(pin) == 4):
-            return jsonify({'status': 'error', 'message': 'PIN must be a 4-digit integer!'})
-
-        # Check if username already exists
-        if username in bank_system.password_manager:
-            return jsonify({'status': 'error', 'message': 'Username already taken!'})
-
-        # Register the user
-        bank_system.register_user(username, password, pin)
-        return jsonify({'status': 'success', 'message': 'Account created successfully!', 'redirect': url_for('home')})
-
-    # If GET request, render the registration page
-    return render_template('register.html')
-
-    
-
-# Main menu route
-@app.route('/main_menu')
+@app.route("/main-menu")
 def main_menu():
-    if 'username' not in session:
-        return redirect(url_for('home'))
-    username = session['username']
-    return render_template('main_menu.html', username=username)
+    if "user" in session:
+        return render_template("main-menu.html")
+    return redirect(url_for("login"))
 
-# Master menu route
-@app.route('/master_menu')
-def master_menu():
-    if 'username' not in session or session['username'] != bank_system.master_account['username']:
-        return redirect(url_for('home'))
-    return render_template('master_menu.html')
 
-# Logout route
-@app.route('/logout')
+@app.route("/logout")
 def logout():
-    session.pop('username', None)
-    return redirect(url_for('home'))
+    session.pop("user", None)
+    return redirect(url_for("home"))
 
-# Deposit route
-@app.route('/deposit', methods=['POST'])
-def deposit():
-    if 'username' not in session:
-        return jsonify({'status': 'error', 'message': 'Unauthorized!'})
-    username = session['username']
-    amount = float(request.form['amount'])
-    if amount <= 0 or amount > 50000:
-        return jsonify({'status': 'error', 'message': 'Invalid deposit amount!'})
-    bank_system.deposit(username, amount)
-    return jsonify({'status': 'success', 'message': f'Deposited ${amount} successfully!'})
-
-# Withdraw route
-@app.route('/withdraw', methods=['POST'])
-def withdraw():
-    if 'username' not in session:
-        return jsonify({'status': 'error', 'message': 'Unauthorized!'})
-    username = session['username']
-    pin = request.form['pin']
-    amount = float(request.form['amount'])
-    if amount <= 0 or amount > bank_system.password_manager[username]['balance']:
-        return jsonify({'status': 'error', 'message': 'Invalid withdrawal amount!'})
-    if pin != bank_system.password_manager[username]['pin']:
-        return jsonify({'status': 'error', 'message': 'Incorrect PIN!'})
-    bank_system.withdraw(username, amount)
-    return jsonify({'status': 'success', 'message': f'Withdrew ${amount} successfully!'})
-
-# Check balance route
-@app.route('/balance')
-def balance():
-    if 'username' not in session:
-        return jsonify({'status': 'error', 'message': 'Unauthorized!'})
-    username = session['username']
-    balance = bank_system.password_manager[username]['balance']
-    return jsonify({'status': 'success', 'balance': balance})
-
-# Run the Flask app
-if __name__ == '__main__':
+if __name__ == "__main__":
+    init_db()
     app.run(debug=True)

@@ -2,7 +2,8 @@
 <html>
 <head>
     <title>Register - Banking System</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}?v=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+
 </head>
 <body>
     <header>
@@ -31,9 +32,38 @@
         </form>
         
         <p>Already have an account? <a href="{{ url_for('login') }}">Login here</a></p>
-
     </section>
 
-    <script src="script.js"></script>
+    <script>
+        document.getElementById('register-form').onsubmit = async (event) => {
+            event.preventDefault();
+
+            const username = document.getElementById('reg-username').value;
+            const password = document.getElementById('reg-password').value;
+            const pin = document.getElementById('reg-pin').value;
+
+            try {
+                const response = await fetch('/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: new URLSearchParams({ username, password, pin })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert(data.message); // Show success message
+                    window.location.href = data.redirect; // Redirect to home page
+                } else {
+                    alert(data.message); // Show error message
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                alert('An unexpected error occurred. Please try again.');
+            }
+        };
+    </script>
 </body>
 </html>

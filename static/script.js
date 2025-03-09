@@ -11,25 +11,47 @@ document.querySelectorAll('nav ul li a').forEach(anchor => {
 });
 
 // Form validation for the login form
-const loginForm = document.getElementById('login-form');
-if (loginForm) {
-    loginForm.addEventListener('submit', function (e) {
-        e.preventDefault(); // Prevent form submission
+document.getElementById('login-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
 
-        const username = document.getElementById('username').value.trim();
-        const password = document.getElementById('password').value.trim();
-
-        // Basic validation
-        if (!username || !password) {
-            alert('Please fill in both username and password.');
-            return;
+    fetch('/login', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Server Response:", data); // Debugging
+        if (data.status === 'success') {
+            window.location.href = data.redirect;  // Redirect to main-menu.html
+        } else {
+            alert(data.message); // Show error if login fails
         }
-
-        // Simulate a successful login (replace with actual backend logic)
-        alert(`Welcome back, ${username}!`);
-        loginForm.reset(); // Clear the form
     });
-}
+});
+
+document.getElementById('register-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+
+    fetch('/register', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("Server Response:", data); // Debugging output
+        if (data.status === 'success') {
+            window.location.href = data.redirect;  // Redirect to login page
+        } else {
+            alert(data.message);
+        }
+    });
+});
+
+
 
 // Responsive navigation menu for smaller screens
 const nav = document.querySelector('nav ul');
