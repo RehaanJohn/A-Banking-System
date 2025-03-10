@@ -470,6 +470,32 @@
         }
     }
 
+    // Function to delete an expense
+        function deleteExpense(id) {
+            if (confirm('Are you sure you want to delete this expense?')) {
+                fetch(`/expenses/${id}`, {
+                    method: 'DELETE',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'x-access-token': token 
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Expense deleted successfully', 'success');
+                        fetchExpenses(); // Refresh the table
+                    } else {
+                        showNotification(data.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    showNotification('Failed to delete expense', 'error');
+                    console.error('Error:', error);
+                });
+            }
+        }
+
         // Add proper table update function
         function updateExpensesTable(expenses) {
             const tbody = document.getElementById('expenses-table');
@@ -491,15 +517,18 @@
             `).join('');
         }
 
-        // Update event listeners for dynamic content
-        document.addEventListener('click', (e) => {
+        // Event delegation for dynamically created buttons
+        document.addEventListener('click', function(e) {
             if (e.target.closest('.delete-btn')) {
                 const row = e.target.closest('tr');
-                deleteExpense(row.dataset.id);
+                const expenseId = row.dataset.id;
+                deleteExpense(expenseId);
             }
+
             if (e.target.closest('.modify-btn')) {
                 const row = e.target.closest('tr');
-                editExpense(row.dataset.id);
+                const expenseId = row.dataset.id;
+                editExpense(expenseId);
             }
         });
 
@@ -551,46 +580,63 @@
         `).join('');
     }
 
-    // Update edit function to handle description
-    function editExpense(id) {
-        fetch(`/expenses?id=${id}`, {
-            headers: { 'x-access-token': token }
-        })
-        .then(response => response.json())
-        .then(expense => {
-            document.getElementById('amount').value = expense.amount;
-            document.getElementById('category').value = expense.category;
-            document.getElementById('date').value = expense.date;
-            document.getElementById('description').value = expense.description; // Added description
-            
-            const form = document.getElementById('expense-form');
-            form.onsubmit = function(e) {
-                e.preventDefault();
-                const updatedData = {
-                    id: expense.id,
-                    amount: parseFloat(document.getElementById('amount').value),
-                    category: document.getElementById('category').value,
-                    date: document.getElementById('date').value,
-                    description: document.getElementById('description').value // Added description
-                };
-
-                fetch('/expenses', {
-                    method: 'PUT',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'x-access-token': token 
-                    },
-                    body: JSON.stringify(updatedData)
+            // Update edit function to handle description
+            function editExpense(id) {
+                fetch(`/expenses/${id}`, {
+                    headers: { 'x-access-token': token }
                 })
                 .then(response => response.json())
-                .then(data => {
-                    showNotification(data.message, data.status);
-                    fetchExpenses();
-                    form.reset();
+                .then(expense => {
+                    // Populate the form with the expense data
+                    document.getElementById('amount').value = expense.amount;
+                    document.getElementById('category').value = expense.category;
+                    document.getElementById('date').value = expense.date;
+                    document.getElementById('description').value = expense.description;
+
+                    // Update the form's submit handler to handle edits
+                    const form = document.getElementById('expense-form');
+                    form.onsubmit = function(e) {
+                        e.preventDefault();
+                        const updatedData = {
+                            id: expense.id,
+                            amount: parseFloat(document.getElementById('amount').value),
+                            category: document.getElementById('category').value,
+                            date: document.getElementById('date').value,
+                            description: document.getElementById('description').value
+                        };
+
+                        fetch(`/expenses/${expense.id}`, {
+                            method: 'PUT',
+                            headers: { 
+                                'Content-Type': 'application/json',
+                                'x-access-token': token 
+                            },
+                            body: JSON.stringify(updatedData)
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                showNotification('Expense updated successfully', 'success');
+                                fetchExpenses(); // Refresh the table
+                                form.reset(); // Reset the form
+                                form.onsubmit = originalSubmitHandler; // Restore original submit handler
+                            } else {
+                                showNotification(data.message, 'error');
+                            }
+                        })
+                        .catch(error => {
+                            showNotification('Failed to update expense', 'error');
+                            console.error('Error:', error);
+                        });
+                    };
+                })
+                .catch(error => {
+                    showNotification('Failed to fetch expense details', 'error');
+                    console.error('Error:', error);
                 });
-            };
-        });
-    }
+            }
+
+            let originalSubmitHandler = document.getElementById('expense-form').onsubmit;
 
 
         function getCategoryIcon(category) {
@@ -616,9 +662,8 @@
         }
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             fetchExpenses();
-            window.originalSubmitHandler = document.getElementById('expense-form').onsubmit;
         });
                 
     </script>
