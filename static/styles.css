@@ -40,6 +40,15 @@ nav ul li a:hover {
     color: #bb86fc;
 }
 
+.portal_1 {
+    max-width: 500px;
+    margin: 150px auto 50px;
+    padding: 30px;
+    background-color: rgba(30, 30, 30, 0.9);
+    border-radius: 10px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+}
+
 .portal {
     max-width: 500px;
     margin: 150px auto 50px;
@@ -47,6 +56,61 @@ nav ul li a:hover {
     background-color: rgba(30, 30, 30, 0.9);
     border-radius: 10px;
     box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+.portal::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, 
+        transparent, 
+        rgba(187, 134, 252, 0.8), 
+        transparent, 
+        rgba(3, 218, 198, 0.8));
+    animation: rotateGlow 4s linear infinite;
+    z-index: -1;
+}
+
+@keyframes rotateGlow {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Add light trail effect */
+.portal::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 50%;
+    height: 100%;
+    background: linear-gradient(
+        to right,
+        rgba(255, 255, 255, 0) 0%,
+        rgba(255, 255, 255, 0.1) 50%,
+        rgba(255, 255, 255, 0) 100%
+    );
+    animation: lightTrail 3s ease-in-out infinite;
+}
+
+@keyframes lightTrail {
+    0% {
+        left: -100%;
+    }
+    100% {
+        left: 200%;
+    }
 }
 
 h2 {
@@ -143,6 +207,17 @@ section:hover {
 }
 
 /* Heading styling */
+
+section h1 {
+    color: #ffffff;
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    background: linear-gradient(45deg, #bb86fc, #03dac6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: fadeIn 1.5s ease-in-out;
+}
 
 
 /* Paragraph styling */

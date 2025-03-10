@@ -1,35 +1,35 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Expense Tracker</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}?v=2.0">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Expense Tracker | Financial Management</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}?v=3.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary: #7c3aed;
-            --secondary: #a78bfa;
-            --background: #0f172a;
-            --surface: #1e293b;
-            --on-surface: #f8fafc;
-        }
+    --primary: #4F46E5;
+    --secondary: #6366F1;
+    --accent: #10B981;
+    --background: #0F172A;
+    --surface: #1E293B;
+    --on-surface: #F8FAFC;
+    --border: #334155;
+}
 
         body {
-            font-family: 'Poppins', sans-serif;
+            font-family: 'Inter', sans-serif;
             margin: 0;
             padding: 0;
             background: var(--background);
             color: var(--on-surface);
             min-height: 100vh;
-        }
-
-        .gradient-bg {
-            background: linear-gradient(135deg, var(--background) 0%, #1e1b4b 100%);
+            line-height: 1.6;
         }
 
         header {
-            background: rgba(28, 25, 75, 0.8);
+            background: rgba(15, 23, 42, 0.95);
             backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
             padding: 1rem 0;
             position: fixed;
             width: 100%;
@@ -43,13 +43,17 @@
             gap: 2rem;
             padding: 0 2rem;
             margin: 0;
+            list-style: none;
         }
 
         nav ul li a {
-            color: var(--secondary);
+            color: var(--on-surface);
             text-decoration: none;
             font-weight: 500;
-            transition: color 0.3s ease;
+            transition: color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         nav ul li a:hover {
@@ -57,108 +61,141 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 100px auto 2rem;
             padding: 0 2rem;
+            box-sizing: border-box;
         }
 
         .dashboard-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+
+        .dashboard-title {
+            font-size: 2.25rem;
+            font-weight: 600;
+            color: var(--on-surface);
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-subtitle {
+            color: #94A3B8;
+            font-size: 1.125rem;
             margin-bottom: 2rem;
-        }
-
-        .welcome-card {
-            background: var(--surface);
-            border-radius: 1rem;
-            padding: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 2rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        .welcome-text h1 {
-            margin: 0;
-            color: var(--primary);
-            font-size: 2rem;
-        }
-
-        .illustration img {
-            width: 200px;
-            filter: drop-shadow(0 4px 6px rgba(124, 58, 237, 0.2));
         }
 
         .grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 2rem;
-            margin-top: 2rem;
+            margin-bottom: 3rem;
         }
 
         .card {
             background: var(--surface);
-            border-radius: 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
             padding: 1.5rem;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s ease;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
         }
 
         .form-group {
-            margin-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            box-sizing: border-box;
         }
 
         input, select {
-            width: 100%;
-            padding: 0.8rem;
-            border: 1px solid #334155;
+            width: calc(100% - 2px);
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
             border-radius: 0.5rem;
-            background: #0f172a;
+            background: var(--background);
             color: var(--on-surface);
             font-family: inherit;
+            transition: border-color 0.2s ease;
+            box-sizing: border-box;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%234F46E5' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1em;
         }
 
         button {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            background: var(--primary);
             color: white;
             border: none;
-            padding: 0.8rem 1.5rem;
+            padding: 0.75rem 1.5rem;
             border-radius: 0.5rem;
             cursor: pointer;
-            font-weight: 600;
-            transition: transform 0.2s ease;
+            font-weight: 500;
+            transition: background 0.2s ease;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            box-sizing: border-box;
         }
 
         button:hover {
-            transform: translateY(-2px);
+            background: var(--secondary);
         }
 
         .expenses-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 1rem;
-        }
-
-        .expenses-table th,
-        .expenses-table td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #334155;
+            margin-top: 1.5rem;
         }
 
         .expenses-table th {
-            background: rgba(124, 58, 237, 0.1);
+            text-align: left;
+            padding: 1rem;
+            background: rgba(79, 70, 229, 0.05);
             color: var(--primary);
+            font-weight: 500;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .expenses-table td {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
         }
 
         .category-chip {
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.25rem 0.75rem;
-            border-radius: 1rem;
-            background: rgba(124, 58, 237, 0.1);
-            color: var(--secondary);
+            padding: 0.375rem 1rem;
+            border-radius: 0.5rem;
+            background: rgba(79, 70, 229, 0.1);
+            color: var(--primary);
+            font-size: 0.875rem;
         }
 
         .action-buttons {
@@ -169,26 +206,50 @@
         .chart-container {
             height: 300px;
             margin: 2rem 0;
+            background: var(--surface);
+            border-radius: 0.75rem;
+            padding: 1rem;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
         @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
             .grid {
                 grid-template-columns: 1fr;
             }
-            
-            .welcome-card {
-                flex-direction: column;
-                text-align: center;
+
+            .dashboard-title {
+                font-size: 1.75rem;
+            }
+
+            .dashboard-subtitle {
+                font-size: 1rem;
+            }
+
+            .card-header {
+                font-size: 1.1rem;
             }
         }
     </style>
 </head>
-<body class="gradient-bg">
+<body>
     <header>
         <nav>
             <ul>
-                <li><a href="/"><i class="fas fa-home"></i> Home</a></li>
-                <li><a href="/main-menu"><i class="fas fa-bars"></i> Menu</a></li>
+                <li><a href="/"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="/reports"><i class="fas fa-chart-bar"></i> Reports</a></li>
                 <li><a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </nav>
@@ -196,62 +257,70 @@
 
     <div class="container">
         <div class="dashboard-header">
-            <div class="welcome-card">
-                <div class="welcome-text">
-                    <h1>Expense Tracker 💸</h1>
-                    <p>Track your expenses and stay on budget</p>
-                </div>
-                <div class="illustration">
-                    <img src="{{ url_for('static', filename='images/finance_dashboard.svg') }}" alt="Finance Illustration">
-                </div>
-            </div>
+            <h1 class="dashboard-title">Expense Management</h1>
+            <p class="dashboard-subtitle">Track and analyze your financial expenditures</p>
         </div>
 
         <div class="grid">
             <div class="card">
-                <h2><i class="fas fa-plus-circle"></i> Add Expense</h2>
+                <div class="card-header">
+                    <i class="fas fa-plus-circle"></i>
+                    Record New Expense
+                </div>
                 <form id="expense-form">
                     <div class="form-group">
                         <input type="number" id="amount" placeholder="Amount" required>
                     </div>
                     <div class="form-group">
                         <select id="category">
-                            <option value="Food">🍔 Food</option>
-                            <option value="Transport">🚕 Transport</option>
-                            <option value="Entertainment">🎮 Entertainment</option>
-                            <option value="Bills">📄 Bills</option>
-                            <option value="Other">✨ Other</option>
+                            <option value="Food">Food & Dining</option>
+                            <option value="Transport">Transportation</option>
+                            <option value="Entertainment">Entertainment</option>
+                            <option value="Bills">Utilities & Bills</option>
+                            <option value="Other">Miscellaneous</option>
                         </select>
                     </div>
                     <div class="form-group">
                         <input type="date" id="date" required>
                     </div>
-                    <button type="submit">Add Expense <i class="fas fa-arrow-circle-right"></i></button>
+                    <button type="submit">
+                        <i class="fas fa-save"></i>
+                        Save Expense
+                    </button>
                 </form>
             </div>
 
             <div class="card">
-                <h2><i class="fas fa-filter"></i> Filter Expenses</h2>
+                <div class="card-header">
+                    <i class="fas fa-filter"></i>
+                    Filter Expenses
+                </div>
                 <div class="form-group">
                     <select id="filter">
-                        <option value="week">📅 Past Week</option>
-                        <option value="month">🗓️ Past Month</option>
-                        <option value="3months">📆 Last 3 Months</option>
-                        <option value="custom">🎛️ Custom Range</option>
+                        <option value="week">Last 7 Days</option>
+                        <option value="month">Current Month</option>
+                        <option value="3months">Last 3 Months</option>
+                        <option value="custom">Custom Range</option>
                     </select>
                 </div>
                 <div class="form-group" id="custom-dates" style="display: none;">
                     <input type="date" id="start-date">
                     <input type="date" id="end-date">
                 </div>
-                <button onclick="fetchExpenses()">Apply Filter <i class="fas fa-sliders-h"></i></button>
+                <button onclick="fetchExpenses()">
+                    <i class="fas fa-sliders-h"></i>
+                    Apply Filters
+                </button>
             </div>
         </div>
 
         <div class="card">
-            <h2><i class="fas fa-history"></i> Expense History</h2>
+            <div class="card-header">
+                <i class="fas fa-history"></i>
+                Expense History
+            </div>
             <div class="chart-container">
-                <!-- Chart would be implemented with Chart.js -->
+                <!-- Chart implementation -->
             </div>
             <table class="expenses-table">
                 <thead>
