@@ -1,28 +1,251 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
     <title>Main Menu - Banking System</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}?v=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #4F46E5;
+            --secondary: #6366F1;
+            --accent: #10B981;
+            --background: #0F172A;
+            --surface: #1E293B;
+            --on-surface: #F8FAFC;
+            --border: #334155;
+            --error: #EF4444;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--background);
+            color: var(--on-surface);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        header {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 0;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        nav ul {
+            display: flex;
+            justify-content: flex-end;
+            gap: 2rem;
+            padding: 0 2rem;
+            margin: 0;
+            list-style: none;
+        }
+        nav ul li a {
+            color: var(--on-surface);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        nav ul li a:hover {
+            color: var(--primary);
+        }
+        .container {
+            max-width: 1280px;
+            margin: 100px auto 2rem;
+            padding: 0 2rem;
+            box-sizing: border-box;
+        }
+        .dashboard-header {
+            margin-bottom: 2.5rem;
+            text-align: center;
+        }
+        .dashboard-title {
+            font-size: 2.25rem;
+            font-weight: 600;
+            color: var(--on-surface);
+            margin-bottom: 0.5rem;
+        }
+        .dashboard-subtitle {
+            color: #94A3B8;
+            font-size: 1.125rem;
+            margin-bottom: 2rem;
+        }
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            box-sizing: border-box;
+        }
+        .card-header {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .form-group {
+            margin-bottom: 1.25rem;
+            box-sizing: border-box;
+        }
+        input, button {
+            width: calc(100% - 2px);
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            background: var(--background);
+            color: var(--on-surface);
+            font-family: inherit;
+            transition: border-color 0.2s ease;
+            box-sizing: border-box;
+        }
+        input:focus {
+            border-color: var(--primary);
+            outline: none;
+        }
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+        button:hover {
+            background: var(--secondary);
+        }
+        .notification {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            background: var(--surface);
+            color: var(--on-surface);
+        }
+    </style>
 </head>
 <body>
     <header>
         <nav>
             <ul>
-                <li><a href="#home">Home</a></li>
-                <li><a href="#news">News</a></li>
-                <li><a href="#contact">Contact</a></li>
+                <li><a href="/"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="/profile"><i class="fas fa-user"></i> Profile Settings</a></li>
+                <li><a href="/expense-tracker"><i class="fas fa-receipt"></i> Expense Tracker</a></li>
+                <li><a href="javascript:void(0)" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </nav>
     </header>
 
-    <section class="portal_1">
-        <h2>Welcome, {{ username }}!</h2>
-        <div class="button-group">
-            <button onclick="window.location.href='/expense-tracker'">Expense Tracker</button>
-            <button onclick="window.location.href='/logout'">Logout</button>
+    <div class="container">
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">Welcome, {{ username }}!</h1>
+            <p class="dashboard-subtitle">Here’s your account summary and quick actions.</p>
         </div>
-    </section>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <!-- Account Summary Card -->
+        <div class="card">
+            <div class="card-header"><i class="fas fa-wallet"></i> Account Summary</div>
+            <p>Checking Account Balance: ${{ checking_balance }}</p>
+            <p>Savings Account Balance: ${{ savings_balance }}</p>
+        </div>
+
+        <!-- Deposit Money Card -->
+        <div class="card">
+            <div class="card-header"><i class="fas fa-plus-circle"></i> Deposit Money</div>
+            <form id="deposit-form">
+                <div class="form-group">
+                    <label for="deposit-amount">Amount</label>
+                    <input type="number" id="deposit-amount" name="amount" placeholder="Enter amount" required>
+                </div>
+                <div class="form-group">
+                    <label for="deposit-pin">Enter PIN</label>
+                    <input type="password" id="deposit-pin" name="pin" placeholder="PIN" required>
+                </div>
+                <button type="submit">Deposit</button>
+            </form>
+        </div>
+
+        <!-- Withdraw Money Card -->
+        <div class="card">
+            <div class="card-header"><i class="fas fa-minus-circle"></i> Withdraw Money</div>
+            <form id="withdraw-form">
+                <div class="form-group">
+                    <label for="withdraw-amount">Amount</label>
+                    <input type="number" id="withdraw-amount" name="amount" placeholder="Enter amount" required>
+                </div>
+                <div class="form-group">
+                    <label for="withdraw-pin">Enter PIN</label>
+                    <input type="password" id="withdraw-pin" name="pin" placeholder="PIN" required>
+                </div>
+                <button type="submit">Withdraw</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Function to simulate PIN verification (for demo purposes; implement secure server-side validation)
+        function verifyPin(inputPin) {
+            // For this example, the correct PIN is hardcoded as '1234'
+            return inputPin === '1234';
+        }
+
+        // Deposit form submission handler
+        document.getElementById('deposit-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = document.getElementById('deposit-amount').value;
+            const pin = document.getElementById('deposit-pin').value;
+            if (!verifyPin(pin)) {
+                showNotification('Incorrect PIN for deposit!', 'error');
+                return;
+            }
+            // Here you would normally send the deposit request to the server
+            showNotification('Deposit of $' + amount + ' successful!', 'success');
+            this.reset();
+        });
+
+        // Withdraw form submission handler
+        document.getElementById('withdraw-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const amount = document.getElementById('withdraw-amount').value;
+            const pin = document.getElementById('withdraw-pin').value;
+            if (!verifyPin(pin)) {
+                showNotification('Incorrect PIN for withdrawal!', 'error');
+                return;
+            }
+            // Here you would normally send the withdrawal request to the server
+            showNotification('Withdrawal of $' + amount + ' successful!', 'success');
+            this.reset();
+        });
+
+        // Logout confirmation before redirecting to logout route
+        function confirmLogout() {
+            if (confirm('Are you sure you want to log out?')) {
+                window.location.href = '/logout';
+            }
+        }
+
+        // Function to display notifications on the screen
+        function showNotification(message, type) {
+            const notification = document.createElement('div');
+            notification.className = 'notification ' + type;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+    </script>
 </body>
 </html>
