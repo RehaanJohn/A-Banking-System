@@ -301,25 +301,6 @@
                 opacity: 0.8;
             }
 
-            /* Modify button styling */
-            .modify-btn {
-                background: none;
-                border: none;
-                color: var(--primary);
-                cursor: pointer;
-                padding: 0.5rem;
-                opacity: 0;
-                transition: opacity 0.2s ease;
-                position: absolute;
-                right: 0.5rem;
-                top: 50%;
-                transform: translateY(-50%);
-            }
-
-            .expenses-table tr:hover .modify-btn {
-                opacity: 1;
-            }
-
             /* Adjustments for the "Record New Expense" form */
             #expense-form .form-group:last-child {
                 margin-bottom: 0;
@@ -348,9 +329,9 @@
     <header>
         <nav>
             <ul>
-                <li><a href="/"><i class="fas fa-home"></i> Dashboard</a></li>
+                <li><a href="/main-menu"><i class="fas fa-home"></i> Dashboard</a></li>
                 <li><a href="/reports"><i class="fas fa-chart-bar"></i> Reports</a></li>
-                <li><a href="/logout"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
+                <li><a href="javascript:void(0)" onclick="confirmLogout()"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
             </ul>
         </nav>
     </header>
@@ -515,9 +496,6 @@
                             <i class="fas fa-trash"></i>
                         </button>
                         <input type="text" value="${expense.description || ''}" readonly>
-                        <button class="modify-btn">
-                            <i class="fas fa-edit"></i>
-                        </button>
                     </td>
                 </tr>
             `).join('');
@@ -575,9 +553,6 @@
                         <i class="fas fa-trash"></i>
                     </button>
                     <input type="text" value="${expense.description || ''}" readonly>
-                    <button class="modify-btn">
-                        <i class="fas fa-edit"></i>
-                    </button>
                 </td>
             </tr>
         `).join('');
@@ -710,6 +685,14 @@
             document.getElementById('date').value = today;
             fetchExpenses();
         });
+
+        // Logout confirmation before redirecting to logout route
+        function confirmLogout() {
+            if (confirm('Are you sure you want to log out?')) {
+                window.location.href = '/logout';
+            }
+        }
+
     </script>
 </body>
 </html>
