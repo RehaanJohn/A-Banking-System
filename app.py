@@ -8,16 +8,17 @@ def init_db():
     conn = sqlite3.connect("users.db")
     c = conn.cursor()
     
-    # Create users table
+    # Create users table with PIN column added
     c.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
-            password TEXT NOT NULL
+            password TEXT NOT NULL,
+            pin TEXT NOT NULL
         )
     """)
     
-    # Create expenses table with proper schema
+    # Create expenses table
     c.execute("""
         CREATE TABLE IF NOT EXISTS expenses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -25,6 +26,7 @@ def init_db():
             amount REAL NOT NULL,
             category TEXT NOT NULL,
             date DATE NOT NULL,
+            description TEXT,
             FOREIGN KEY(username) REFERENCES users(username)
         )
     """)
@@ -119,9 +121,9 @@ def handle_expenses():
             conn = sqlite3.connect("users.db")
             c = conn.cursor()
             c.execute("""
-                INSERT INTO expenses (username, amount, category, date)
-                VALUES (?, ?, ?, ?)
-            """, (username, data['amount'], data['category'], data['date']))
+                INSERT INTO expenses (username, amount, category, date, description)
+                VALUES (?, ?, ?, ?, ?)
+            """, (username, data['amount'], data['category'], data['date'], data.get('description', '')))
             conn.commit()
             return jsonify({"status": "success", "message": "Expense added"})
         except Exception as e:
@@ -139,7 +141,7 @@ def handle_expenses():
             conn = sqlite3.connect("users.db")
             c = conn.cursor()
             
-            query = "SELECT id, amount, category, date FROM expenses WHERE username = ?"
+            query = "SELECT id, amount, category, date, description FROM expenses WHERE username = ?"
             params = [username]
             
             if time_filter == 'week':
@@ -158,7 +160,8 @@ def handle_expenses():
                 "id": row[0],
                 "amount": row[1],
                 "category": row[2],
-                "date": row[3]
+                "date": row[3],
+                "description": row[4] or ""
             } for row in expenses])
         finally:
             conn.close()
@@ -185,16 +188,89 @@ def handle_expenses():
             c = conn.cursor()
             c.execute("""
                 UPDATE expenses 
-                SET amount = ?, category = ?, date = ?
+                SET amount = ?, category = ?, date = ?, description = ?
                 WHERE id = ? AND username = ?
             """, (data['amount'], data['category'], data['date'], 
-                 data['id'], username))
+                 data.get('description', ''), data['id'], username))
             conn.commit()
             return jsonify({"status": "success", "message": "Expense updated"})
         finally:
             conn.close()
 
+# Add a new route to handle single expense operations
+@app.route('/expenses/<int:expense_id>', methods=['GET', 'DELETE', 'PUT'])
+def handle_single_expense(expense_id):
+    if 'user' not in session:
+        return jsonify({"status": "error", "message": "Not authenticated"}), 401
 
+    username = session['user']
+    
+    if request.method == 'GET':
+        try:
+            conn = sqlite3.connect("users.db")
+            c = conn.cursor()
+            c.execute("SELECT id, amount, category, date, description FROM expenses WHERE id = ? AND username = ?", 
+                     (expense_id, username))
+            expense = c.fetchone()
+            
+            if not expense:
+                return jsonify({"status": "error", "message": "Expense not found"}), 404
+                
+            return jsonify({
+                "id": expense[0],
+                "amount": expense[1],
+                "category": expense[2],
+                "date": expense[3],
+                "description": expense[4] or ""
+            })
+        finally:
+            conn.close()
+            
+    elif request.method == 'DELETE':
+        try:
+            conn = sqlite3.connect("users.db")
+            c = conn.cursor()
+            c.execute("DELETE FROM expenses WHERE id = ? AND username = ?", 
+                     (expense_id, username))
+            conn.commit()
+            
+            if c.rowcount == 0:
+                return jsonify({"status": "error", "message": "Expense not found"}), 404
+                
+            return jsonify({"status": "success", "message": "Expense deleted"})
+        finally:
+            conn.close()
+            
+    elif request.method == 'PUT':
+        data = request.get_json()
+        try:
+            conn = sqlite3.connect("users.db")
+            c = conn.cursor()
+            
+            if 'description' in data and len(data) == 1:
+                # Only updating description for inline editing
+                c.execute("""
+                    UPDATE expenses 
+                    SET description = ?
+                    WHERE id = ? AND username = ?
+                """, (data['description'], expense_id, username))
+            else:
+                # Full update
+                c.execute("""
+                    UPDATE expenses 
+                    SET amount = ?, category = ?, date = ?, description = ?
+                    WHERE id = ? AND username = ?
+                """, (data['amount'], data['category'], data['date'], 
+                     data.get('description', ''), expense_id, username))
+            
+            conn.commit()
+            
+            if c.rowcount == 0:
+                return jsonify({"status": "error", "message": "Expense not found"}), 404
+                
+            return jsonify({"status": "success", "message": "Expense updated"})
+        finally:
+            conn.close()
 
 @app.route("/logout")
 def logout():

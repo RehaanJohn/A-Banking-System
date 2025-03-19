@@ -459,27 +459,33 @@
         
         // Add proper fetchExpenses implementation
         async function fetchExpenses() {
-        try {
-            const response = await fetch('/expenses', {
-                headers: { 'x-access-token': token }
-            });
-            const expenses = await response.json();
-            updateExpensesTable(expenses);
-        } catch (error) {
-            showNotification('Failed to fetch expenses', 'error');
+    try {
+        const filter = document.getElementById('filter').value;
+        let url = `/expenses?filter=${filter}`;
+        
+        if (filter === 'custom') {
+            const startDate = document.getElementById('start-date').value;
+            const endDate = document.getElementById('end-date').value;
+            if (startDate && endDate) {
+                url += `&start=${startDate}&end=${endDate}`;
+            }
         }
+        
+        const response = await fetch(url);
+        const expenses = await response.json();
+        updateExpensesTable(expenses);
+    } catch (error) {
+        showNotification('Failed to fetch expenses', 'error');
     }
+}
 
     // Function to delete an expense
         function deleteExpense(id) {
             if (confirm('Are you sure you want to delete this expense?')) {
                 fetch(`/expenses/${id}`, {
-                    method: 'DELETE',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'x-access-token': token 
-                    }
-                })
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' }
+})
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'success') {
@@ -542,13 +548,10 @@
         };
 
         fetch('/expenses', {
-            method: 'POST',
-            headers: { 
-                'Content-Type': 'application/json',
-                'x-access-token': token
-            },
-            body: JSON.stringify(formData)
-        })
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(formData)
+})
         .then(response => response.json())
         .then(data => {
             if(data.status === 'success') {
@@ -665,7 +668,48 @@
         document.addEventListener('DOMContentLoaded', function() {
             fetchExpenses();
         });
+
+        document.getElementById('filter').addEventListener('change', function() {
+            const customDates = document.getElementById('custom-dates');
+            customDates.style.display = this.value === 'custom' ? 'block' : 'none';
+        });
                 
+        // Event delegation for inline description editing
+        document.addEventListener('click', function(e) {
+            const input = e.target.closest('td.description input');
+            if (input) {
+                input.readOnly = false;
+                input.focus();
+            }
+        });
+
+        document.addEventListener('focusout', function(e) {
+            const input = e.target;
+            if (input.tagName === 'INPUT' && input.parentElement.classList.contains('description')) {
+                input.readOnly = true;
+                const expenseId = input.closest('tr').dataset.id;
+                const newDescription = input.value;
+                
+                fetch(`/expenses/${expenseId}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ description: newDescription })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showNotification('Description updated', 'success');
+                    }
+                });
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set today's date as default
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('date').value = today;
+            fetchExpenses();
+        });
     </script>
 </body>
 </html>
